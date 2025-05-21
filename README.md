@@ -5,8 +5,11 @@ A CLI tool to search for conference talks.
 ## Installation
 
 ```bash
-# Install from source
-git clone https://github.com/yourusername/conventions.git
+# Install from PyPI
+pip install conventions
+
+# Or install from source
+git clone https://github.com/hwranderson/conventions.git
 cd conventions
 pip install -e .
 ```
@@ -17,35 +20,35 @@ Search for talks by keyword:
 
 ```bash
 # Search for SLAM talks in ICRA 2025 (default)
-conventions search slam
+python -m conventions search slam
 
 # Search in a specific conference
-conventions search navigation --conference ICRA25
+python -m conventions search navigation --conference ICRA25
 
 # Limit results
-conventions search robotics --max-results 10
+python -m conventions search robotics --max-results 10
 ```
 
 List available conferences:
 
 ```bash
-conventions list
+python -m conventions list
 ```
 
 Get information about a specific conference:
 
 ```bash
-conventions info ICRA25
+python -m conventions info ICRA25
 ```
 
 Clear the cache:
 
 ```bash
 # Clear cache for a specific conference
-conventions clear-cache ICRA25
+python -m conventions clear-cache ICRA25
 
 # Clear all cached data
-conventions clear-cache --all
+python -m conventions clear-cache --all
 ```
 
 ## Supported Conferences
@@ -56,12 +59,12 @@ conventions clear-cache --all
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/conventions.git
+git clone https://github.com/hwranderson/conventions.git
 cd conventions
 
 # Install in development mode
 pip install -e .
 
 # Run the CLI
-conventions search slam
+python -m conventions search slam
 ```
