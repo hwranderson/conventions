@@ -14,7 +14,7 @@ setup(
             "conventions=conventions.cli:main",
         ],
     },
-    author="Henry Anderson™",
+    author="Henry Anderson",
     author_email="hwranderson@gmail.com",
     description="A CLI tool to search for conference talks",
     keywords="conference, search, cli",
