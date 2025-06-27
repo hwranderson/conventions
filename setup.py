@@ -1,13 +1,19 @@
 from setuptools import setup, find_packages
+import requests
+import beautifulsoup4
+import click
+import yaypp
+
 
 setup(
     name="conventions",
-    version="0.2.0",
+    version="0.3.0",
     packages=find_packages(),
     install_requires=[
         "requests",
         "beautifulsoup4",
         "click",
+        "yaypp>=0.2.0",
     ],
     entry_points={
         "console_scripts": [

@@ -3,6 +3,8 @@
 Command line interface for the conventions package.
 """
 import click
+import yaypp
+import os
 from conventions.conferences import get_conference
 from conventions.search import search_conference
 from conventions.cache import cache
@@ -103,6 +105,68 @@ def clear_cache(conference_id, all):
         click.echo(f"Cache cleared for conference '{conference_id}'.")
     else:
         click.echo("Please specify a conference ID or use --all to clear all caches.", err=True)
+
+
+@cli.command()
+@click.argument("conference_id")
+@click.option("--output", "-o", help="Output file path (default: {conference_id}.yaml)")
+@click.option("--include-talks", "-t", is_flag=True, help="Include individual talks in the export")
+def export(conference_id, output, include_talks):
+    """Export conference data to YAML format."""
+    try:
+        if conference_id not in CONFERENCES:
+            click.echo(f"Conference '{conference_id}' not found.", err=True)
+            return
+        
+        # Get conference data
+        conf_data = get_conference(conference_id)
+        
+        # Prepare data for export
+        export_data = {
+            "conference": {
+                "id": conf_data["id"],
+                "title": conf_data["title"],
+                "name": conf_data.get("name", ""),
+                "dates": conf_data.get("dates", ""),
+                "location": conf_data.get("location", ""),
+                "url": conf_data["url"]
+            },
+            "sessions": []
+        }
+        
+        # Add sessions data
+        for session in conf_data.get("sessions", []):
+            session_data = {
+                "code": session.get("code", ""),
+                "title": session.get("title", ""),
+                "time": session.get("time", ""),
+                "location": session.get("location", ""),
+                "url": session.get("url", "")
+            }
+            
+            # Include talks if requested
+            if include_talks and session.get("talks"):
+                session_data["talks"] = session["talks"]
+            
+            export_data["sessions"].append(session_data)
+        
+        # Determine output file path
+        if not output:
+            output = f"{conference_id.lower()}.yaml"
+        
+        # Export to YAML using yaypp
+        with open(output, 'w') as f:
+            # First dump to YAML string
+            yaml_str = yaypp.yaml.dump(export_data, default_flow_style=False, indent=2, sort_keys=False)
+            # Then format it nicely with yaypp
+            formatted_yaml = yaypp.format_yaml(yaml_str)
+            f.write(formatted_yaml)
+        
+        click.echo(f"Conference data exported to {output}")
+        click.echo(f"Sessions exported: {len(export_data['sessions'])}")
+        
+    except Exception as e:
+        click.echo(f"Error exporting conference data: {str(e)}", err=True)
 
 
 def main():
