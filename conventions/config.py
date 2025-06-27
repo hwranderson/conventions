@@ -19,6 +19,18 @@ CONFERENCES = {
         "url": "https://ras.papercept.net/conferences/conferences/ICRA25/program/ICRA25_ProgramAtAGlanceWeb.html",
         "dates": "May 19-23, 2025",
         "location": "Atlanta, USA"
+    },
+    "IROS25": {
+        "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems 2025",
+        "url": "http://irmv.sjtu.edu.cn/iros2025/",
+        "dates": "Oct 19-25, 2025",
+        "location": "Hangzhou, China"
+    },
+    "HUMANOIDS25": {
+        "name": "IEEE-RAS 24th International Conference on Humanoid Robots 2025",
+        "url": "http://2025.ieee-humanoids.org/",
+        "dates": "Sep 30 - Oct 2, 2025",
+        "location": "Seoul, Korea (South)"
     }
 }
 

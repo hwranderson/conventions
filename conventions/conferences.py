@@ -58,28 +58,60 @@ def fetch_and_parse_conference(url: str, conference_id: str) -> Dict[str, Any]:
     Returns:
         A dictionary containing the parsed conference data
     """
-    # Fetch the webpage
-    response = requests.get(url)
-    response.raise_for_status()
-    
-    # Parse the HTML content
-    soup = BeautifulSoup(response.text, "html.parser")
-    
-    # Extract conference title and dates
-    conference_info = None
-    for strong in soup.find_all('strong'):
-        if 'conference' in strong.text.lower():
-            conference_info = strong.text.strip()
-            break
-    
-    if not conference_info:
+    try:
+        # Fetch the webpage
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        # Parse the HTML content
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # Extract conference title and dates
+        conference_info = None
+        for strong in soup.find_all('strong'):
+            if 'conference' in strong.text.lower():
+                conference_info = strong.text.strip()
+                break
+        
+        if not conference_info:
+            conference_info = f"Conference {conference_id}"
+        
+        # Parse based on the conference type
+        if conference_id == "ICRA25":
+            sessions = parse_icra25(soup)
+        elif conference_id == "IROS25":
+            sessions = parse_iros25(soup)
+        elif conference_id == "HUMANOIDS25":
+            sessions = parse_humanoids25(soup)
+        else:
+            sessions = []
+            
+    except requests.exceptions.RequestException as e:
+        # Handle network errors, 404s, etc.
+        print(f"Warning: Could not fetch {conference_id} program page ({url}): {e}")
         conference_info = f"Conference {conference_id}"
-    
-    # Parse based on the conference type
-    if conference_id == "ICRA25":
-        sessions = parse_icra25(soup)
-    else:
-        sessions = []
+        
+        # Return basic conference info when webpage is not available
+        if conference_id == "IROS25":
+            sessions = [{
+                "code": "iros25_placeholder",
+                "title": "IROS 2025 - Program will be available closer to the conference date",
+                "time": "Oct 19-25, 2025",
+                "location": "Hangzhou, China",
+                "talks": [],
+                "url": url
+            }]
+        elif conference_id == "HUMANOIDS25":
+            sessions = [{
+                "code": "humanoids25_placeholder",
+                "title": "Humanoids 2025 - Program will be available closer to the conference date",
+                "time": "Sep 30 - Oct 2, 2025",
+                "location": "Seoul, Korea (South)",
+                "talks": [],
+                "url": url
+            }]
+        else:
+            sessions = []
     
     return {
         "id": conference_id,
@@ -156,6 +188,94 @@ def parse_icra25(soup: BeautifulSoup) -> List[Dict[str, Any]]:
                 "talks": [],  # Would need to parse the detail page to get individual talks
                 "url": f"https://ras.papercept.net/conferences/conferences/ICRA25/program/{href}"
             })
+    
+    return sessions
+
+
+def parse_iros25(soup: BeautifulSoup) -> List[Dict[str, Any]]:
+    """
+    Parse IROS 2025 specific conference data.
+    
+    Args:
+        soup: BeautifulSoup object of the parsed HTML content
+        
+    Returns:
+        A list of session dictionaries with talk information
+    """
+    sessions = []
+    
+    # Look for common session patterns in IROS websites
+    # This is a basic parser that can be enhanced when the program becomes available
+    
+    # Try to find session or program information
+    for element in soup.find_all(['div', 'section', 'table']):
+        if element.get('class') and any('session' in str(cls).lower() or 'program' in str(cls).lower() 
+                                       for cls in element.get('class', [])):
+            session_title = element.get_text(strip=True)
+            if session_title and len(session_title) > 10:  # Avoid very short titles
+                sessions.append({
+                    "code": f"iros25_session_{len(sessions) + 1}",
+                    "title": session_title[:200],  # Limit title length
+                    "time": "",  # To be filled when program is available
+                    "location": "",
+                    "talks": [],
+                    "url": ""
+                })
+    
+    # If no specific sessions found, create a placeholder
+    if not sessions:
+        sessions.append({
+            "code": "iros25_general",
+            "title": "IROS 2025 - Program information will be available closer to the conference date",
+            "time": "Oct 19-25, 2025",
+            "location": "Hangzhou, China",
+            "talks": [],
+            "url": "http://irmv.sjtu.edu.cn/iros2025/"
+        })
+    
+    return sessions
+
+
+def parse_humanoids25(soup: BeautifulSoup) -> List[Dict[str, Any]]:
+    """
+    Parse Humanoids 2025 specific conference data.
+    
+    Args:
+        soup: BeautifulSoup object of the parsed HTML content
+        
+    Returns:
+        A list of session dictionaries with talk information
+    """
+    sessions = []
+    
+    # Look for common session patterns in Humanoids websites
+    # This is a basic parser that can be enhanced when the program becomes available
+    
+    # Try to find program or schedule information
+    for element in soup.find_all(['div', 'section', 'table']):
+        text = element.get_text().lower()
+        if any(keyword in text for keyword in ['program', 'schedule', 'session', 'keynote', 'tutorial']):
+            session_text = element.get_text(strip=True)
+            if session_text and len(session_text) > 10:
+                sessions.append({
+                    "code": f"humanoids25_session_{len(sessions) + 1}",
+                    "title": session_text[:200],  # Limit title length
+                    "time": "",  # To be filled when program is available
+                    "location": "",
+                    "talks": [],
+                    "url": ""
+                })
+    
+    # If no specific sessions found, create a placeholder
+    if not sessions:
+        sessions.append({
+            "code": "humanoids25_general",
+            "title": "Humanoids 2025 - Program information will be available closer to the conference date",
+            "time": "Sep 30 - Oct 2, 2025",
+            "location": "Seoul, Korea (South)",
+            "talks": [],
+            "url": "http://2025.ieee-humanoids.org/"
+        })
     
     return sessions
 
